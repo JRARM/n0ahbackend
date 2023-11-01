@@ -1,5 +1,4 @@
 import { User } from "../models/User.js";
-import jwt from "jsonwebtoken";
 import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
 export const register = async (req, res) => {
   const { email, password } = req.body;
@@ -50,24 +49,15 @@ export const infoUser = async (req, res) => {
 
 export const refreshToken = (req, res) => {
   try {
-    console.log(req.cookies.refreshToken);
-    const refreshtokenCookie = req.cookies.refreshToken;
-    if (!refreshtokenCookie) throw new Error("No Bearer");
-
-    const { uid } = jwt.verify(refreshtokenCookie, process.env.JWT_REFRESH);
-    const { token, expiresIn } = generateToken(uid);
+    const { token, expiresIn } = generateToken(req.uid);
     return res.json({ token, expiresIn });
   } catch (error) {
-    const TokenVerificationErrors = {
-      "invalid signature": "La firma del JWT no es valida",
-      "jwt expired": "JWT Expiro",
-      "invalid token": "Token no valido",
-      "No Bearer": "Utiliza formato Bearer",
-    };
-
     console.log(error);
-    return res
-      .status(401)
-      .json({ error: TokenVerificationErrors[error.message] });
+    return res.status(500).json({ error: "Error del servidor" });
   }
+};
+
+export const logout = (req, res) => {
+  res.clearCookie("refreshToken");
+  res.json({ message: "Se cerro la sesion correctamente" });
 };
