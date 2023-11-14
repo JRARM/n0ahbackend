@@ -1,7 +1,10 @@
 import { Router } from "express";
-import { getActivityByUser, getAllAnswersByCourse, getAllDatesByCourse, getAllSuspects, getUsers, getallCourses } from "../controllers/records.controller.js";
+import { getActivityByUser, getAllAnswersByCourse, getAllDatesByCourse, getAllSuspects, getUsers, getactivityforDay, getactivityforhour, getallCourses } from "../controllers/records.controller.js";
 
 const router = Router();
+
+router.get('/getactivityforday', getactivityforDay);
+router.get('/getactivityforhour', getactivityforhour);
 
 router.post("/getuseractions", getActivityByUser);
 

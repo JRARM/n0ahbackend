@@ -1,5 +1,55 @@
 import { Record } from "../models/Record.js";
 
+
+//general data charts
+export const getactivityforDay=async(req,res)=>{
+  const activityforday= await Record.aggregate([
+    {
+        $project: {
+            dayOfWeek: { $dayOfWeek: { $toDate: "$_id" } }, 
+            data: 1 
+        }
+    },
+    {
+        $group: {
+            _id: "$dayOfWeek",
+            count: { $sum: 1 },
+            
+        }
+    },
+    {
+        $sort: { _id: 1 } 
+    }
+]);
+  console.log(activityforday);
+  return res.status(200).json(activityforday);
+  
+}
+
+export const getactivityforhour=async(req,res)=>{
+  const activityforhour= await Record.aggregate([
+    {
+        $project: {
+            hour: { $hour: { $toDate: "$_id" } } // Extraer la hora del campo _id
+        }
+    },
+    {
+        $group: {
+            _id: "$hour",
+            count: { $sum: 1 }
+        }
+    },
+    {
+        $sort: { _id: 1 } // Ordenar por la hora
+    }
+]);
+  console.log(activityforhour);
+  return res.status(200).json(activityforhour);
+
+}
+
+//end general data charts
+
 export const getallCourses=async(req,res)=>{
 
   const allCourses= await Record.distinct("course");
@@ -14,40 +64,36 @@ export const getAllSuspects= async(req,res)=>{
     {
       $match: {
         "course": course,
-        "date": date,
-        "answers": answer
+        "answers": answer,
+        "date": date
       }
     },
     {
       $group: {
-        _id: {
-          course: "$course",
-          date: "$date",
-          answers: "$answers",
-          time: "$time"
-        },
-        users: { $addToSet: "$username" }
+        _id: "$username",     
+        times: { $addToSet: "$time" }
       }
     },
     {
       $project: {
         _id: 0,
-        course: "$_id.course",
-        date: "$_id.date",
-        answers: "$_id.answers",
-        time: "$_id.time",
-        users: 1
+        username: "$_id",
+        numTiempos: { $size: "$times" } // Obtener el tamaño del array de tiempos
       }
     },
     {
       $sort: {
-        course: 1,
-        date: 1
+        numTiempos: 1 // Ordenar por username en orden ascendente
       }
     }
   ]);
+
+  const usernames = getAllSuspects.map(item => item.username);
+  const numTiempos = getAllSuspects.map(item => item.numTiempos);
+
+  console.log(usernames,numTiempos);
   console.log(getAllSuspects);
-  return res.status(200).json({getAllSuspects});
+  return res.status(200).json({usernames:usernames,timeincidents:numTiempos});
 
 }
 
@@ -61,10 +107,34 @@ export const getAllAnswersByCourse=async(req,res)=>{
 
 
 export const getAllDatesByCourse=async(req,res)=>{
-  const {course }=req.body;
-  const courseDates=await Record.distinct("date", { course: course });
-  console.log(courseDates);
-  return res.status(200).json({courseDates});
+  const {course ,answer}=req.body;
+  const courseDates=await Record.aggregate([
+    {
+      $match: {
+        "course": course,
+        "answers": answer
+      }
+    },
+    {
+      $group: {
+        _id: "$date"
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        date: "$_id"
+      }
+    },
+    {
+      $sort: {
+        date: 1 
+      }
+    }
+  ]);
+  const dates = courseDates.map(item => item.date);
+  console.log(dates);
+  return res.status(200).json(dates);
 }
 
 
