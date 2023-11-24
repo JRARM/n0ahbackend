@@ -1,13 +1,13 @@
 import { User } from "../models/User.js";
 import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
 export const register = async (req, res) => {
-  const { email, password } = req.body;
+  const { name,email, password,role } = req.body;
   try {
-    const user = new User({ email, password });
+    const user = new User({ name,email, role, password });
     console.log(user);
     await user.save();
     //generate jwt
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true, message: "Registro Correcto" });
   } catch (error) {
     console.log(error);
     if (error.code === 11000) {
@@ -41,7 +41,7 @@ export const infoUser = async (req, res) => {
   try {
     const user = await User.findById(req.uid).lean();
 
-    return res.json({ email: user.email, uid: user._id });
+    return res.json({ email: user.email, uid: user._id, role: user.role });
   } catch (error) {
     return res.status(500).json({ error: "Error del servidor" });
   }
