@@ -11,7 +11,7 @@ export const validationResultExpress = (req, res, next) => {
 
 export const bodyLoginValidator = [
   body("email", "Email Incorrecto").trim().isEmail().normalizeEmail(),
-  body("password", "menos 5 caracteres")
+  body("password", "La contraseña no puede tener menos de 8 caracteres")
     .isLength({ min: 8 })
     .custom((value, { req }) => {
       return value;
@@ -21,7 +21,7 @@ export const bodyLoginValidator = [
 
 export const bodyRegisterValidator = [
   body("email", "Email Incorrecto").trim().isEmail().normalizeEmail(),
-  body("password", "menos 5 caracteres")
+  body("password", "La contraseña no puede tener menos de 8 caracteres")
     .isLength({ min: 8 })
     .custom((value, { req }) => {
       return value;
